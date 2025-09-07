@@ -56,8 +56,13 @@ while true ; do
   date
   timer=$(date "+%s")
   # wait for the network to come back up
-  ./util/wait4net.sh >/dev/null 2>&1
-  # the network is back up
+  false
+  while [ "$?" -ne 0 ] ; do
+    ./net/wait4net.sh >/dev/null 2>&1
+    # the network is back up
+    # call the script to determine+handle if our ip changed
+    python3 -B ip/ipmon.py
+  done
   # update our current outage and total outage values
   outage=$((outage+$(date "+%s")-timer))
   totaloutage=$((totaloutage+outage))
@@ -66,7 +71,5 @@ while true ; do
   echo "Total outages: ($(./util/secs2text.sh $totaloutage))"
   date
   echo " ~ Outage end ~"
-  # call the script to determine+handle if our ip changed
-  python3 -B ip/ipmon.py
 done
 
