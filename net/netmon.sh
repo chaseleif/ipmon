@@ -21,7 +21,7 @@ trap 'signal SIGTERM' SIGTERM
 trap 'signal SIGINT' SIGINT
 
 # if we have an outages file with a total outage time
-if grep "Total" -q "outages" 2>/dev/null ; then
+if grep -q "Total" "outages" 2>/dev/null ; then
   # retain the total outage time from the prior process
   totaloutage=$(grep "Total" "outages" | tail -n1)
   totaloutage=$(echo "$totaloutage" | cut -d'(' -f2 | cut -d')' -f1)
@@ -31,6 +31,8 @@ if grep "Total" -q "outages" 2>/dev/null ; then
     ''|*[!0-9]* ) totaloutage=0 ;;
     * ) ;;
   esac
+else
+  totaloutage=0
 fi
 
 # begin monitoring connectivity
@@ -38,14 +40,12 @@ domaini=-1
 echo "monitor starting ~ $(date)"
 while true ; do
   # sleep for 40-90 seconds
-  timer="$(shuf -i 40-90 --random-source=/dev/urandom -n1)"
-  sleep "$timer"
+  sleep "$((RANDOM%51+40))"
   # if we can ping restart the loop
   try && continue
   outage="$timer"
   # sleep for 30-60 seconds
-  timer="$(shuf -i 30-60 --random-source=/dev/urandom -n1)"
-  sleep "$timer"
+  sleep "$((RANDOM%31+30))"
   # if we can ping restart the loop
   try && continue
   # if we can connect to ifconfig.me for an ip address then restart the loop
